@@ -1,10 +1,18 @@
 <?php
     include_once("./config/config.php");
-
+    $submitted = false;
     if(isset($_POST["submit"])){
+        $title = mysqli_real_escape_string($connection, $_POST['title']);
+        $description = mysqli_real_escape_string($connection, $_POST['description']);
+        $r = mysqli_query($connection, "INSERT INTO notes(title, description) VALUES('$title', '$description')");
         
+        if($r){
+            $submitted = true;
+        }
+
     }
 ?>
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -37,24 +45,67 @@
         </div>
     </nav>  
 
-    <div class='alert alert-success alert-dismissible fade show' role='alert' style="visibility : hidden">
-    <strong>Holy guacamole!</strong> You should check in on some of those fields below.
-    <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
-    </div>
+    <?php
+        // echo $submitted;
+        if($submitted == true){
+            echo "<div class='alert alert-success alert-dismissible fade show' role='alert' >
+            <strong>Added Successfully!</strong> You should check in on some of those fields below.
+            <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+            </div>";
+        }
+    ?>
+
+    
 
     <div class="container">
         <h2 class="my-4">Create a Note</h2>
-    <form action="./index.php" class="m-3">
+    <form action="./index.php" class="m-3" method="POST">
         <label for="title" class="form-label">Title</label>
-        <input type="text" class="form-control" name="title" id="title" placeholder="Write title...">
+        <input type="text" class="form-control" name="title" id="title" placeholder="Write title..." required>
 
         
         <div class="form-floating my-3">
-         <textarea class="form-control" placeholder="Describe your goal ... " id="description" style="height: 200px"></textarea>
+         <textarea class="form-control" placeholder="Describe your goal ... " id="description" name="description" style="height: 200px" required></textarea>
          <label for="description">Describe your note ... </label>
         </div>
-        <input type="submit" class="btn btn-primary" name="submit">
+        <input type="submit" class="btn btn-primary" name="submit" value="Add note">
     </form>
+
+    <h2>Your Notes</h2>
+    <?php
+        $result = mysqli_query($connection,"SELECT * FROM notes;");
+        if(mysqli_num_rows($result)>0){
+            echo "
+            <table class='table'>
+            <thead>
+            <tr>
+              <th scope='col'>Serial #</th>
+              <th scope='col'>Title</th>
+              <th scope='col'>Description</th>
+              <th scope='col'>Date Added</th>
+              <th scope='col'>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          ";
+
+        while($res = mysqli_fetch_array($result)){
+        echo "<tr>
+        <td>".$res['serialNo']."</td>
+        <td>".$res['title']."</td>
+        <td>".$res['description']."</td>
+        <td>".$res['dateAdded']."</td>
+        <td></td>
+        </tr>" ;   
+        }
+        echo "</tbody>
+        </table>";
+        }
+        else{
+            echo "<p>You have no records!</p>";
+        }
+
+    ?>
     </div>
     
 
